@@ -16,7 +16,15 @@ module IgApi
       User.new session: session
     end
 
-    def login(username, password, config = IgApi::Configuration.new)
+    def login(username, password, path_to_store)
+      if path_to_store && File.exist?(path_to_store)
+        if (saved_data = File.read(path_to_store))
+          return Marshal.load(saved_data)
+        end
+      end
+
+      config = IgApi::Configuration.new
+
       user = User.new username: username,
                       password: password
 
@@ -47,7 +55,7 @@ module IgApi
       cookies = cookies_array.join('; ')
       user.config = config
       user.session = cookies
-
+      File.write(path_to_store, Marshal.dump(user)) if path_to_store
       user
     end
 
