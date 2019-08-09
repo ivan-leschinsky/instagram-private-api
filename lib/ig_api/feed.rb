@@ -39,7 +39,6 @@ module IgApi
                    .exec
 
       JSON.parse result.body, object_class: OpenStruct
-
     rescue JSON::ParserError => e
       puts "ERROR! Error while parsing json, #{e.message}"
       puts result.body

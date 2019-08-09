@@ -4,6 +4,7 @@ require 'ig_api/version'
 require 'openssl'
 require 'net/http'
 require 'json'
+require 'ostruct'
 require 'ig_api/user'
 require 'ig_api/account'
 require 'ig_api/feed'
@@ -68,6 +69,11 @@ module IgApi
 
     def exec
       http @data
+    rescue Net::OpenTimeout => e
+      puts "ERROR! Error while connecting to HTTP, #{e.message}"
+      puts e.backtrace
+      puts "End error"
+      OpenStruct.new(body: '{}')
     end
 
     def get(url)
