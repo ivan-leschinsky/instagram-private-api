@@ -70,9 +70,11 @@ module IgApi
     def exec
       http @data
     rescue Net::OpenTimeout => e
-      puts "ERROR! Error while connecting to HTTP, #{e.message}"
-      puts e.backtrace
-      puts "End error"
+      if defined?($LOG_ERRORS) && $LOG_ERRORS
+        puts "ERROR! Error while connecting to HTTP, #{e.message}"
+        puts e.backtrace
+        puts "End error"
+      end
       OpenStruct.new(body: '{}')
     end
 

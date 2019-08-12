@@ -40,9 +40,11 @@ module IgApi
 
       JSON.parse result.body, object_class: OpenStruct
     rescue JSON::ParserError => e
-      puts "ERROR! Error while parsing json, #{e.message}"
-      puts result.body
-      puts "End error"
+      if defined?($LOG_ERRORS) && $LOG_ERRORS
+        puts "ERROR! Error while parsing json, #{e.message}"
+        puts result.body
+        puts "End error"
+      end
       {}
     end
 
