@@ -76,7 +76,7 @@ module IgApi
 
       result = JSON.parse result.body, object_class: OpenStruct
 
-      if result.num_results > 0
+      if result.num_results && result.num_results > 0
         result_users = result.users
         user_result = result_users.find { |u| u[:username] == username }
         user_object = IgApi::User.new username: username
@@ -84,6 +84,13 @@ module IgApi
         user_object.session = user.session
         user_object
       end
+    end
+
+    def self.create_for_id(user, username, data)
+      user_object = IgApi::User.new username: username
+      user_object.data = data
+      user_object.session = user.session
+      user_object
     end
 
     def list_direct_messages(user, limit = 100)
