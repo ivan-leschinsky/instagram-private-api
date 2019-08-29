@@ -24,7 +24,30 @@ module IgApi
                      .with(session: @user[:session], ua: @user[:ua])
                      .exec
 
-      response.body
+      JSON.parse(response.body)['reels']
+    rescue JSON::ParserError => e
+      if defined?($LOG_ERRORS) && $LOG_ERRORS
+        puts "ERROR! Error while parsing json for reels(stories), #{e.message}"
+        puts result.body
+        puts "End error"
+      end
+      {}
+    end
+
+    def highlights_tray(user_id)
+      endpoint = Constants::URL + "highlights/#{user_id}/highlights_tray/"
+      response = @api.get(endpoint)
+                     .with(session: @user[:session], ua: @user[:ua])
+                     .exec
+
+      JSON.parse(response.body)['tray']
+    rescue JSON::ParserError => e
+      if defined?($LOG_ERRORS) && $LOG_ERRORS
+        puts "ERROR! Error while parsing json for highlights, #{e.message}"
+        puts result.body
+        puts "End error"
+      end
+      {}
     end
 
     def timeline_media(params = {})
