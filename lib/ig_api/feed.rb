@@ -28,7 +28,7 @@ module IgApi
     rescue JSON::ParserError => e
       if defined?($LOG_ERRORS) && $LOG_ERRORS
         puts "ERROR! Error while parsing json for reels(stories), #{e.message}"
-        puts result.body
+        puts response.body
         puts "End error"
       end
       {}
@@ -44,7 +44,7 @@ module IgApi
     rescue JSON::ParserError => e
       if defined?($LOG_ERRORS) && $LOG_ERRORS
         puts "ERROR! Error while parsing json for highlights, #{e.message}"
-        puts result.body
+        puts response.body
         puts "End error"
       end
       {}
@@ -57,15 +57,15 @@ module IgApi
       endpoint = Constants::URL + "feed/user/#{user_id}/"
       endpoint << "?rank_token=#{rank_token}"
       params.each { |k, v| endpoint << "&#{k}=#{v}" }
-      result = @api.get(endpoint)
+      response = @api.get(endpoint)
                    .with(session: @user[:session], ua: @user[:ua])
                    .exec
 
-      JSON.parse result.body, object_class: OpenStruct
+      JSON.parse response.body, object_class: OpenStruct
     rescue JSON::ParserError => e
       if defined?($LOG_ERRORS) && $LOG_ERRORS
         puts "ERROR! Error while parsing json, #{e.message}"
-        puts result.body
+        puts response.body
         puts "End error"
       end
       {}
