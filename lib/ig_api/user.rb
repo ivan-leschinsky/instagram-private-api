@@ -48,7 +48,7 @@ module IgApi
     end
 
     def search_for_user_graphql(username)
-      account.search_for_graphql(self, username)
+      Account.search_for_user_graphql(self, username)
     end
 
     def followers(limit = Float::INFINITY, data = {})

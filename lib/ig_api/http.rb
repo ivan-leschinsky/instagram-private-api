@@ -116,7 +116,6 @@ module IgApi
 
         request.body = args.key?(:body) ? args[:body] : nil
       end
-
       http.request(request)
     end
 

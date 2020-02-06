@@ -28,6 +28,8 @@ module IgApi
       user = User.new username: username,
                       password: password
 
+
+      uuid = IgApi::Http.generate_uuid
       request = api.post(
         Constants::URL + 'accounts/login/',
         format(
@@ -35,14 +37,40 @@ module IgApi
           IgApi::Http.generate_signature(
             device_id: user.device_id,
             login_attempt_user: 0, password: user.password, username: user.username,
-            _csrftoken: 'missing', _uuid: IgApi::Http.generate_uuid
+            _csrftoken: 'missing', _uuid: uuid
           )
         )
       ).with(ua: user.useragent).exec
 
       response = JSON.parse request.body, object_class: OpenStruct
 
-      raise response.message if response.status == 'fail'
+      if response.status == 'fail'
+        if response.error_type == 'checkpoint_challenge_required'
+          # uuid = IgApi::Http.generate_uuid
+          username_id = response.challenge.api_path.split('/')[2]
+          csrf_token = request.get_fields('set-cookie')[0].match(/\bcsrftoken.*; /).to_s.split(';').first.split('csrftoken=').last
+          params = format(
+            'ig_sig_key_version=4&signed_body=%s',
+            IgApi::Http.generate_signature(
+              choice: 0,
+              device_id: user.device_id,
+              _uid: username_id,
+              _csrftoken: csrf_token,
+              _uuid: uuid,
+              guid: uuid
+            )
+          )
+          request = api.post(Constants::URL + response.challenge.api_path[1..-1], params).with(ua: user.useragent).exec.body
+
+          request = api.post(Constants::URL + '/challenge/6005886155/OURE81JskT/'[1..-1], params).with(ua: user.useragent).exec
+
+          # request = api.get(Constants::URL + response.challenge.api_path[1..-1] + '?choice=0').with(ua: user.useragent).exec
+          # request = api.post(Constants::URL + response.challenge.url, { choice: 0 }).with(ua: user.useragent).exec
+          # request = api.post(response.challenge.url, format('choice=0')).with(ua: user.useragent).exec
+        else
+          raise response.message
+        end
+      end
 
       logged_in_user = response.logged_in_user
       user.data = logged_in_user
@@ -61,10 +89,10 @@ module IgApi
 
     def self.search_for_user_graphql(user, username)
       endpoint = "https://www.instagram.com/#{username}/?__a=1"
-      result = IgApi::API.http(url: endpoint, method: 'GET', user: user)
+      result = IgApi::Http.new.get(endpoint).with(session: user.session, ua: user.useragent).exec
 
       response = JSON.parse result.body, symbolize_names: true, object_class: OpenStruct
-      return nil unless response.user.any?
+      response if response.graphql
     end
 
     def search_for_user(user, username)
